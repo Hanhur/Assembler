@@ -40,3 +40,4 @@ start:
 	call ExitProcess
 	;---------------
 end start
+;Lesson 6
