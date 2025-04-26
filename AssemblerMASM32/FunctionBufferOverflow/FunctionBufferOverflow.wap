@@ -24,3 +24,4 @@ DebOut=
 2=main.inc
 3=exploit.inc
 4=functions.inc
+5=tester.inc

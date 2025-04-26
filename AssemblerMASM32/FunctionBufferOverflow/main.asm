@@ -18,10 +18,35 @@ main proc
 	;------------
 	;call exploit2
 	;------------
-	call get_comp_info
+	;call get_comp_info
+	
 	;------------
+	;	Test
+	;------------
+	
+	mov eax, 7FFFFFFFh
+	mov edx, 1
+	;------------
+	;invoke simple_add, eax, edx
+	;------------
+	invoke int_add, eax, edx
+	
+	;------------
+	; Print test result
+	;------------
+	
+	printf("Result: %i\n", eax)
+	
+	;------------
+	; Pause programm
+	;------------
+	
 	inkey
+	
 	;------------
+	; Exit code = 0
+	;------------
+	
 	xor eax, eax
 	;------------
 	Ret
