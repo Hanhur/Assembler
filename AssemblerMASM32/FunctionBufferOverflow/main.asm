@@ -14,7 +14,11 @@ main proc
 	printf("Buffer Overflow as type of Vulnerability Tutorial by Tempesta\n")
 	printf("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
 	;------------
-	call exploit
+	;call exploit
+	;------------
+	;call exploit2
+	;------------
+	call get_comp_info
 	;------------
 	inkey
 	;------------
