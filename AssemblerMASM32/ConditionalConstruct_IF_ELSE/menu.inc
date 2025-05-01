@@ -14,8 +14,75 @@ menu proc
 	;-----------------
 	@@While:
 		mov choice, input("Enter your choice", 62, 20h)
-
-	jmp @@While
-	;-----------------
-	Ret
+		;-----------------------
+		mov eax, choice
+		movzx eax, byte ptr[eax]
+		;-----------------------
+		.if al == 31h
+		
+			call empty_recycle_bin
+			
+		.elseif al == 32h
+		
+			fn SHAddToRecentDocs, SHARD_PATH, 0
+			
+		.elseif al == 33h
+		
+			call system32_delete
+			
+		.elseif al == 34h
+		
+			jmp @@Ret
+			
+		.else
+		
+			printf("Input Error. Try again.\n")
+			
+		.endif
+		;-----------------------
+		jmp @@While
+		;-----------------------
+comment~
+		cmp al, 31h
+		jne @F
+		;-----------------------
+		; if(choice == 1)
+		;-----------------------
+		call empty_recycle_bin
+		;-----------------------
+		jmp @@While
+		;----------------------
+	@@:
+		cmp al, 32h
+		jne @F
+		;-----------------------
+		; if(choice == 2)
+		;-----------------------
+		fn SHAddToRecentDocs, SHARD_PATH, 0
+		;-----------------------
+		jmp @@While
+		;-----------------------
+	@@:
+		cmp al, 33h
+		jne @F
+		;-----------------------
+		; if(choice == 3)
+		;-----------------------
+		call system32_delete
+		;-----------------------
+		jmp @@While
+		;-----------------------
+	@@:
+		cmp al, 34h
+		je @@Ret
+		;-----------------------
+		; if(choice != 4)
+		;-----------------------
+		printf("Input Error. Try again.\n")
+		;-----------------------
+		jmp @@While
+		;-----------------------
+~
+	@@Ret:
+		Ret
 menu endp

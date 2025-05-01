@@ -11,8 +11,6 @@ start:
 main proc
 	call menu
 	;--------------
-	inkey
-	;--------------
 	xor eax, eax
 	;--------------
 	Ret
