@@ -7,6 +7,8 @@ Keyboard_check_pressed	proto
 Keyboard_check			proto
 GameController			proto
 KeyEvent				proto
+DrawEvent				proto
+DrawScore				proto
 
 
 .const
@@ -31,6 +33,9 @@ KeyEvent				proto
 ;================= Game Controller ===============
 GameController proc uses ebx esi edi
 	fn KeyEvent
+	;-------------------------------
+	fn DrawEvent
+	;-------------------------------
 
 
 
@@ -94,6 +99,18 @@ KeyEvent proc uses ebx esi edi
 	.endif
 	Ret
 KeyEvent endp
+;================= Draw Event ====================
+DrawEvent proc uses ebx esi edi
+	fn DrawSnake, snake.x, snake.y
+	;--------------------------
+	fn DrawScore
+	;--------------------------
+
+
+
+
+	Ret
+DrawEvent endp
 ;================= Keyboard_check ================
 Keyboard_check proc uses ebx esi edi
 	mov byte ptr[bKey], 30h
@@ -110,6 +127,14 @@ Keyboard_check proc uses ebx esi edi
 	@@Ret:
 		Ret
 Keyboard_check endp
+;================= Draw Score ====================
+DrawScore proc uses ebx esi edi
+
+
+
+
+	Ret
+DrawScore endp
 ;================= Draw Level ====================
 DrawLevel proc uses ebx esi edi nLvl:DWORD
 	LOCAL hFile:DWORD
