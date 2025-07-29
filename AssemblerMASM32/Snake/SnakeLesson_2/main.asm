@@ -29,6 +29,8 @@ Main proc
 		fn GameInit
 		;-------------------
 		.while gameOver == 1
+			fn GameUpdate
+			;---------------
 			fn GameController
 		.endw
 		;------------

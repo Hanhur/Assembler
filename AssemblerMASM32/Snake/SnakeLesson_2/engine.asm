@@ -1,6 +1,8 @@
 
 
 GameInit				proto
+GameUpdate				proto
+;-----------------------------------------
 DrawLevel				proto :DWORD
 Play_sound				proto :DWORD
 Keyboard_check_pressed	proto
@@ -9,12 +11,15 @@ GameController			proto
 KeyEvent				proto
 DrawEvent				proto
 DrawScore				proto
+DrawPanel				proto
+StepEvent				proto
 
 
 .const
 ;---------------- Keys -------------------
 	KEY_ENTER	equ 13
 	KEY_ESC		equ 27
+	MAX_STEP	equ 30
 
 
 .data
@@ -36,10 +41,8 @@ GameController proc uses ebx esi edi
 	;-------------------------------
 	fn DrawEvent
 	;-------------------------------
-
-
-
-
+	fn StepEvent
+	;-------------------------------
 	Ret
 GameController endp
 ;================= Game Init =====================
@@ -55,8 +58,9 @@ GameInit proc uses ebx esi edi
 	;---------------------------
 	mov dword ptr[snake.x], 40
 	mov dword ptr[snake.y], 20
-	mov byte ptr[snake.direction], 30h
+	mov byte ptr[snake.direction], 31h
 	mov dword ptr[snake.speed], MAX_SPEED
+	mov dword ptr[spd_count], 0
 	;---------------------------
 	mov dword ptr[score], 0
 	;---------------------------
@@ -83,6 +87,51 @@ GameInit proc uses ebx esi edi
 		fn Sleep, 2000
 		jmp @@Ret
 GameInit endp
+;================= Game Update ===================
+GameUpdate proc uses ebx esi edi
+	LOCAL x:DWORD
+	LOCAL y:DWORD
+	;---------------------------
+	inc spd_count
+	;---------------------------
+	mov eax, spd_count
+	;---------------------------
+	.if eax >= snake.speed
+		mov eax, snake.x
+		mov dword ptr[x], eax
+		;-----------------------
+		mov eax, snake.y
+		mov dword ptr[y], eax
+		;-----------------------
+		fn gotoxy, snake.x, snake.y ;stiranie snake po jevo koordinatam
+		;-----------------------
+		fn crt_putchar, 20h
+		;-----------------------
+		.if
+		
+		
+		
+		
+		.endif
+		;-----------------------
+		mov spd_count, 0
+	.endif
+	Ret
+GameUpdate endp
+;================= Step Event ====================
+StepEvent proc uses ebx esi edi
+	.if snake.direction == 30h
+		mov byte ptr[gameOver], 0
+		;----------------------
+		;		Game Over
+		;----------------------
+		jmp @@Ret
+	.endif
+	;--------------------------
+	@@Ret:
+		fn Sleep, MAX_STEP
+		Ret
+StepEvent endp
 ;================= Key Event =====================
 KeyEvent proc uses ebx esi edi
 	fn Keyboard_check
@@ -105,10 +154,8 @@ DrawEvent proc uses ebx esi edi
 	;--------------------------
 	fn DrawScore
 	;--------------------------
-
-
-
-
+	fn DrawPanel
+	;--------------------------
 	Ret
 DrawEvent endp
 ;================= Keyboard_check ================
@@ -135,6 +182,18 @@ DrawScore proc uses ebx esi edi
 
 	Ret
 DrawScore endp
+;================= Draw Panel ====================
+DrawPanel proc uses ebx esi edi
+
+
+
+
+
+
+
+
+	Ret
+DrawPanel endp
 ;================= Draw Level ====================
 DrawLevel proc uses ebx esi edi nLvl:DWORD
 	LOCAL hFile:DWORD
