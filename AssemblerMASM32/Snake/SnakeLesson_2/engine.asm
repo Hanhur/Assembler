@@ -7,7 +7,10 @@ DrawLevel				proto :DWORD
 Play_sound				proto :DWORD
 Keyboard_check_pressed	proto
 Keyboard_check			proto
+CheckPosition			proto :DWORD, :DWORD
+;-----------------------------------------
 GameController			proto
+;-----------------------------------------
 KeyEvent				proto
 DrawEvent				proto
 DrawScore				proto
@@ -20,6 +23,7 @@ StepEvent				proto
 	KEY_ENTER	equ 13
 	KEY_ESC		equ 27
 	MAX_STEP	equ 30
+	STOP		equ 30h
 
 
 .data
@@ -107,11 +111,50 @@ GameUpdate proc uses ebx esi edi
 		;-----------------------
 		fn crt_putchar, 20h
 		;-----------------------
-		.if
-		
-		
-		
-		
+		.if snake.direction == 'w'
+			mov eax, dword ptr[y]
+			dec eax
+			;--------------------
+			fn CheckPosition, x, eax
+			;--------------------
+			.if al == 20h
+				dec dword ptr[snake.y]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 's'
+			mov eax, dword ptr[y]
+			inc eax
+			;--------------------
+			fn CheckPosition, x, eax
+			;--------------------
+			.if al == 20h
+				inc dword ptr[snake.y]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 'a'
+			mov eax, dword ptr[x]
+			dec eax
+			;--------------------
+			fn CheckPosition, eax, y
+			;--------------------
+			.if al == 20h
+				dec dword ptr[snake.x]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 'd'
+			mov eax, dword ptr[x]
+			inc eax
+			;--------------------
+			fn CheckPosition, eax, y
+			;--------------------
+			.if al == 20h
+				inc dword ptr[snake.x]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
 		.endif
 		;-----------------------
 		mov spd_count, 0
@@ -120,7 +163,7 @@ GameUpdate proc uses ebx esi edi
 GameUpdate endp
 ;================= Step Event ====================
 StepEvent proc uses ebx esi edi
-	.if snake.direction == 30h
+	.if snake.direction == STOP
 		mov byte ptr[gameOver], 0
 		;----------------------
 		;		Game Over
@@ -251,6 +294,37 @@ Keyboard_check_pressed proc uses ebx esi edi
 		;----------------
 	Ret
 Keyboard_check_pressed endp
+;======================= Check Position ====================
+CheckPosition proc uses ebx esi edi x:DWORD, y:DWORD
+	LOCAL cRead:DWORD
+	LOCAL buffer:DWORD
+	LOCAL cbi:CONSOLE_SCREEN_BUFFER_INFO
+	;------------------------------
+	mov dword ptr[buffer], 0
+	;------------------------------
+	fn gotoxy, x, y
+	;------------------------------
+	fn GetStdHandle, -11
+	;------------------------------
+	push eax
+	lea ebx, cbi
+	;------------------------------
+	fn GetConsoleScreenBufferInfo, eax, ebx
+	;------------------------------
+	mov ebx, cbi.dwCursorPosition ;koordinaty kursora
+	;------------------------------
+	lea edi, cRead ;address kolichestva schitanych simsolov
+	;------------------------------
+	lea esi, buffer ;address buffera
+	;------------------------------
+	pop eax
+	;------------------------------
+	fn ReadConsoleOutputCharacter, eax, esi, 1, ebx, edi
+	;------------------------------
+	mov eax, dword ptr[buffer]
+	;------------------------------
+	Ret
+CheckPosition endp
 ;============================================
 Play_sound proc uses ebx esi edi lpFile:DWORD
 	
