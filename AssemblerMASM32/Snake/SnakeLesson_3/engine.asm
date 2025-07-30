@@ -1,0 +1,416 @@
+
+
+GameInit				proto
+GameUpdate				proto
+;-----------------------------------------
+DrawLevel				proto :DWORD
+Play_sound				proto :DWORD
+Keyboard_check_pressed	proto
+Keyboard_check			proto
+CheckPosition			proto :DWORD, :DWORD
+;-----------------------------------------
+GameController			proto
+;-----------------------------------------
+KeyEvent				proto
+DrawEvent				proto
+DrawScore				proto
+DrawPanel				proto
+StepEvent				proto
+;-----------------------------------------
+
+
+.const
+;---------------- Keys -------------------
+	KEY_ENTER	equ 13
+	KEY_ESC		equ 27
+	MAX_STEP	equ 30
+	STOP		equ 30h
+
+
+.data
+	bKey			db 30h ;'0'
+	gameOver		db 0
+	closeConsole	db 0
+	nLevel			db 1
+;------------------------------------------
+	score			dd 0
+	score_old		dd 0
+;------------------------------------------
+	szLevel_1		db "level_1.txt", 0
+
+
+
+
+.code
+;================= Game Controller ===============
+GameController proc uses ebx esi edi
+	fn KeyEvent
+	;-------------------------------
+	fn DrawEvent
+	;-------------------------------
+	fn StepEvent
+	;-------------------------------
+	Ret
+GameController endp
+;================= Game Init =====================
+GameInit proc uses ebx esi edi
+	movzx eax, byte ptr[nLevel]
+	fn DrawLevel, eax
+	;---------------------------
+	or eax, eax
+	;---------------------------
+	je @@Error
+	;---------------------------
+	fn DrawPanel
+	;---------------------------
+	fn SetColor, cLightGreen
+	;---------------------------
+	fn gotoxy, 1, 37
+	;---------------------------
+	fn crt_printf, "Score: "
+	print ustr$(score) ;Makros
+	;---------------------------
+	; 	Object Snake Init
+	;---------------------------
+	mov dword ptr[snake.x], 40
+	mov dword ptr[snake.y], 20
+	mov byte ptr[snake.direction], 31h
+	mov dword ptr[snake.speed], MAX_SPEED
+	mov dword ptr[spd_count], 0
+	;---------------------------
+	mov dword ptr[score], 0
+	mov dword ptr[score_old], 0
+	;---------------------------
+	fn ClearTail
+	;---------------------------
+	mov dword ptr[nTail], 0
+	;---------------------------
+	fn DrawSnake, snake.x, snake.y
+	;---------------------------
+	
+	
+
+
+	;---------------------------
+	@@Ret:
+		Ret
+	;--------------------------
+	@@Error:
+		mov byte ptr[closeConsole], 1
+		mov byte ptr[gameOver], 0
+		;----------------------
+		fn gotoxy, 32, 19
+		;----------------------
+		fn SetColor, cBrown
+		;----------------------
+		fn crt_puts, "Load File failed"
+		;----------------------
+		fn Sleep, 2000
+		jmp @@Ret
+GameInit endp
+;================= Game Update ===================
+GameUpdate proc uses ebx esi edi
+	LOCAL x:DWORD
+	LOCAL y:DWORD
+	LOCAL xprev:DWORD
+	LOCAL yprev:DWORD
+	LOCAL xtemp:DWORD
+	LOCAL ytemp:DWORD
+	;---------------------------
+	inc spd_count
+	;---------------------------
+	mov eax, spd_count
+	;---------------------------
+	.if eax >= snake.speed
+		mov eax, snake.x
+		mov dword ptr[x], eax
+		;-----------------------
+		mov eax, snake.y
+		mov dword ptr[y], eax
+		;-----------------------
+		.if nTail > 0
+			lea esi, tail
+			;-------------------
+			mov eax, dword ptr[esi]
+			mov dword ptr[xprev], eax
+			mov eax, dword ptr[esi + 4]
+			mov dword ptr[yprev], eax
+			;-------------------
+			mov eax, dword ptr[x]
+			mov dword ptr[esi], eax
+			mov eax, dword ptr[y]
+			mov dword ptr[esi + 4], eax
+			;-------------------
+			fn gotoxy, xprev, yprev
+			fn crt_putchar, 20h
+			;-------------------
+			xor ebx, ebx
+			inc ebx
+			add esi, sizeof TAIL
+			;-------------------
+			jmp @@For
+				@@In:
+					mov eax, dword ptr[esi]
+					mov dword ptr[xtemp], eax
+					mov eax, dword ptr[esi + 4]
+					mov dword ptr[ytemp], eax
+					;----------------------------
+					fn gotoxy, xtemp, ytemp
+					;----------------------------
+					fn crt_putchar, 20h
+					;----------------------------
+					mov eax, dword ptr[xprev]
+					mov dword ptr[esi], eax
+					mov eax, dword ptr[yprev]
+					mov dword ptr[esi + 4], eax
+					;---------------------------
+					mov eax, dword ptr[xtemp]
+					mov dword ptr[xprev], eax
+					;---------------------------
+					mov eax, dword ptr[ytemp]
+					mov dword ptr[yprev], eax
+			;-----------------------------------
+			add esi, sizeof TAIL
+			inc ebx
+			@@For:
+				cmp ebx, nTail
+				jb @@In
+		.endif
+		;-----------------------
+		fn gotoxy, snake.x, snake.y ;stiranie snake po jevo koordinatam
+		;-----------------------
+		fn crt_putchar, 20h
+		;-----------------------
+		.if snake.direction == 'w'
+			mov eax, dword ptr[y]
+			dec eax
+			;--------------------
+			fn CheckPosition, x, eax
+			;--------------------
+			.if al == 20h
+				dec dword ptr[snake.y]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 's'
+			mov eax, dword ptr[y]
+			inc eax
+			;--------------------
+			fn CheckPosition, x, eax
+			;--------------------
+			.if al == 20h
+				inc dword ptr[snake.y]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 'a'
+			mov eax, dword ptr[x]
+			dec eax
+			;--------------------
+			fn CheckPosition, eax, y
+			;--------------------
+			.if al == 20h
+				dec dword ptr[snake.x]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.elseif snake.direction == 'd'
+			mov eax, dword ptr[x]
+			inc eax
+			;--------------------
+			fn CheckPosition, eax, y
+			;--------------------
+			.if al == 20h
+				inc dword ptr[snake.x]
+			.elseif al == '#'
+				mov byte ptr[snake.direction], STOP
+			.endif
+		.endif
+		;-----------------------
+		mov spd_count, 0
+	.endif
+	Ret
+GameUpdate endp
+;================= Step Event ====================
+StepEvent proc uses ebx esi edi
+	.if snake.direction == STOP
+		mov byte ptr[gameOver], 0
+		;----------------------
+		;		Game Over
+		;----------------------
+		jmp @@Ret
+	.endif
+	;--------------------------
+	@@Ret:
+		fn Sleep, MAX_STEP
+		Ret
+StepEvent endp
+;================= Key Event =====================
+KeyEvent proc uses ebx esi edi
+	fn Keyboard_check
+	;-------------------------
+	.if byte ptr[bKey] == KEY_ESC
+		mov byte ptr[gameOver], 0
+		mov byte ptr[closeConsole], 1
+		;---------------------
+	.elseif byte ptr[bKey] == 'p'
+	
+	
+	.elseif byte ptr[bKey] == 'w' || byte ptr[bKey] == 's' || byte ptr[bKey] == 'a' || byte ptr[bKey] == 'd'
+		mov byte ptr[snake.direction], al
+	.endif
+	Ret
+KeyEvent endp
+;================= Draw Event ====================
+DrawEvent proc uses ebx esi edi
+	.if nTail > 0
+		fn DrawTail
+	.endif
+	;--------------------------
+	fn DrawSnake, snake.x, snake.y
+	;--------------------------
+	fn DrawScore
+	;--------------------------
+	Ret
+DrawEvent endp
+;================= Keyboard_check ================
+Keyboard_check proc uses ebx esi edi
+	mov byte ptr[bKey], 31h
+	;-------------------------------
+	fn crt__kbhit
+	;-------------------------------
+	or eax, eax
+	;-------------------------------
+	je @@Ret
+	fn crt__getch
+	;-------------------------------
+	mov byte ptr[bKey], al
+	;-------------------------------
+	@@Ret:
+		Ret
+Keyboard_check endp
+;================= Draw Score ====================
+DrawScore proc uses ebx esi edi
+	mov ebx, score
+	;--------------------------
+	.if ebx > score_old
+		fn gotoxy, 8, 37
+		;----------------------
+		print ustr$(ebx) ;Makros
+		;----------------------
+		mov dword ptr[score_old], ebx
+	.endif
+	Ret
+DrawScore endp
+;================= Draw Panel ====================
+DrawPanel proc uses ebx esi edi
+	fn SetColor, cPanel
+	;--------------------------
+	fn gotoxy, 21, 37
+	;--------------------------
+	fn crt_printf, "Esc - back to menu, P - pause the game"
+	;--------------------------
+	Ret
+DrawPanel endp
+;================= Draw Level ====================
+DrawLevel proc uses ebx esi edi nLvl:DWORD
+	LOCAL hFile:DWORD
+	LOCAL buffer[256]:BYTE
+	;------------------------------
+	.if nLvl == 1
+		fn crt_fopen, offset szLevel_1, "r"
+		;--------------------------
+		or eax, eax
+		je @@Ret
+		;--------------------------
+		mov dword ptr[hFile], eax
+		;--------------------------
+		push eax
+		;--------------------------
+		fn SetColor, cLightYellow
+		;--------------------------
+		lea ebx, buffer
+		;--------------------------
+		@@While:
+			fn crt_fgets, ebx, 256, hFile
+			;----------------------
+			or eax, eax
+			;----------------------
+			je @@CloseFile
+			;----------------------
+			fn crt_printf, eax
+			jmp @@While
+		;--------------------------
+		@@CloseFile:
+			pop eax
+			;----------------------
+			fn crt_fclose, eax
+			;----------------------
+			inc eax
+	.endif
+	;------------------------------
+	@@Ret:
+		Ret
+DrawLevel endp
+;================= Nazhatie klavishi ==============
+Keyboard_check_pressed proc uses ebx esi edi
+	fn FlushConsoleInputBuffer, rv(GetStdHandle, -10)
+	;---------------------------------------
+	@@:
+		fn Sleep, 1000
+		fn crt__kbhit ; Proverajet nazatie klavishi
+		;----------------
+		or eax, eax
+		je @B ;Nazad (Back)
+		;----------------
+		fn crt__getch ; Vozvrat nazaty symbol iz registra eax
+		;----------------
+		mov byte ptr[bKey], al
+		;----------------
+	Ret
+Keyboard_check_pressed endp
+;======================= Check Position ====================
+CheckPosition proc uses ebx esi edi x:DWORD, y:DWORD
+	LOCAL cRead:DWORD
+	LOCAL buffer:DWORD
+	;LOCAL cbi:CONSOLE_SCREEN_BUFFER_INFO
+	;------------------------------
+	mov dword ptr[buffer], 0
+	;------------------------------
+	fn gotoxy, x, y
+	;------------------------------
+	fn GetStdHandle, -11
+	;------------------------------
+	;push eax
+	;------------------------------
+	mov ebx, y
+	shl ebx, 16
+	or ebx, x
+	;------------------------------
+	;lea ebx, cbi
+	;------------------------------
+	;fn GetConsoleScreenBufferInfo, eax, ebx
+	;------------------------------
+	;mov ebx, cbi.dwCursorPosition ;koordinaty kursora
+	;------------------------------
+	lea edi, cRead ;address kolichestva schitanych simsolov
+	;------------------------------
+	lea esi, buffer ;address buffera
+	;------------------------------
+	fn GetStdHandle, -11
+	;------------------------------
+	;pop eax
+	;------------------------------
+	fn ReadConsoleOutputCharacter, eax, esi, 1, ebx, edi
+	;------------------------------
+	mov eax, dword ptr[buffer]
+	;------------------------------
+	Ret
+CheckPosition endp
+;============================================
+Play_sound proc uses ebx esi edi lpFile:DWORD
+	
+	fn PlaySound, lpFile, 0, SND_FILENAME or SND_ASYNC
+
+	Ret
+Play_sound endp
