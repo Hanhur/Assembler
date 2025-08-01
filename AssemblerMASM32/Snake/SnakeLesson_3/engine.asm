@@ -70,27 +70,11 @@ GameInit proc uses ebx esi edi
 	fn crt_printf, "Score: "
 	print ustr$(score) ;Makros
 	;---------------------------
-	; 	Object Snake Init
-	;---------------------------
-	mov dword ptr[snake.x], 40
-	mov dword ptr[snake.y], 20
-	mov byte ptr[snake.direction], 31h
-	mov dword ptr[snake.speed], MAX_SPEED
-	mov dword ptr[spd_count], 0
-	;---------------------------
-	mov dword ptr[score], 0
-	mov dword ptr[score_old], 0
-	;---------------------------
-	fn ClearTail
-	;---------------------------
-	mov dword ptr[nTail], 0
+	fn CreateSnake
 	;---------------------------
 	fn DrawSnake, snake.x, snake.y
 	;---------------------------
-	
-	
-
-
+	fn CreateFruit
 	;---------------------------
 	@@Ret:
 		Ret
@@ -149,26 +133,26 @@ GameUpdate proc uses ebx esi edi
 			add esi, sizeof TAIL
 			;-------------------
 			jmp @@For
-				@@In:
-					mov eax, dword ptr[esi]
-					mov dword ptr[xtemp], eax
-					mov eax, dword ptr[esi + 4]
-					mov dword ptr[ytemp], eax
-					;----------------------------
-					fn gotoxy, xtemp, ytemp
-					;----------------------------
-					fn crt_putchar, 20h
-					;----------------------------
-					mov eax, dword ptr[xprev]
-					mov dword ptr[esi], eax
-					mov eax, dword ptr[yprev]
-					mov dword ptr[esi + 4], eax
-					;---------------------------
-					mov eax, dword ptr[xtemp]
-					mov dword ptr[xprev], eax
-					;---------------------------
-					mov eax, dword ptr[ytemp]
-					mov dword ptr[yprev], eax
+			@@In:
+				mov eax, dword ptr[esi]
+				mov dword ptr[xtemp], eax
+				mov eax, dword ptr[esi + 4]
+				mov dword ptr[ytemp], eax
+				;----------------------------
+				fn gotoxy, xtemp, ytemp
+				;----------------------------
+				fn crt_putchar, 20h
+				;----------------------------
+				mov eax, dword ptr[xprev]
+				mov dword ptr[esi], eax
+				mov eax, dword ptr[yprev]
+				mov dword ptr[esi + 4], eax
+				;---------------------------
+				mov eax, dword ptr[xtemp]
+				mov dword ptr[xprev], eax
+				;---------------------------
+				mov eax, dword ptr[ytemp]
+				mov dword ptr[yprev], eax
 			;-----------------------------------
 			add esi, sizeof TAIL
 			inc ebx
@@ -187,7 +171,7 @@ GameUpdate proc uses ebx esi edi
 			;--------------------
 			fn CheckPosition, x, eax
 			;--------------------
-			.if al == 20h
+			.if al == 20h || al == fruit.sprite
 				dec dword ptr[snake.y]
 			.elseif al == '#'
 				mov byte ptr[snake.direction], STOP
@@ -198,7 +182,7 @@ GameUpdate proc uses ebx esi edi
 			;--------------------
 			fn CheckPosition, x, eax
 			;--------------------
-			.if al == 20h
+			.if al == 20h || al == fruit.sprite
 				inc dword ptr[snake.y]
 			.elseif al == '#'
 				mov byte ptr[snake.direction], STOP
@@ -209,7 +193,7 @@ GameUpdate proc uses ebx esi edi
 			;--------------------
 			fn CheckPosition, eax, y
 			;--------------------
-			.if al == 20h
+			.if al == 20h || al == fruit.sprite
 				dec dword ptr[snake.x]
 			.elseif al == '#'
 				mov byte ptr[snake.direction], STOP
@@ -220,7 +204,7 @@ GameUpdate proc uses ebx esi edi
 			;--------------------
 			fn CheckPosition, eax, y
 			;--------------------
-			.if al == 20h
+			.if al == 20h || al == fruit.sprite
 				inc dword ptr[snake.x]
 			.elseif al == '#'
 				mov byte ptr[snake.direction], STOP
@@ -229,18 +213,53 @@ GameUpdate proc uses ebx esi edi
 		;-----------------------
 		mov spd_count, 0
 	.endif
+	;----------------- Catcing a fruit ------------------
+	mov eax, snake.x
+	mov ebx, snake.y
+	;-----------------------------------
+	.if eax == fruit.x && ebx == fruit.y
+		.if nTail < MAX_TAIL
+			inc nTail
+			;--------------------------
+			fn CreateFruit
+			;--------------------------
+			add score, 10
+			;--------------------------
+			fn Play_sound, offset szFruit
+		.endif
+	.endif
 	Ret
 GameUpdate endp
 ;================= Step Event ====================
 StepEvent proc uses ebx esi edi
 	.if snake.direction == STOP
+		@@GameOver:
 		mov byte ptr[gameOver], 0
 		;----------------------
 		;		Game Over
 		;----------------------
 		jmp @@Ret
 	.endif
-	;--------------------------
+	;----------------- Catcing a tail -------------------
+	.if nTail > 0
+		lea esi, tail
+		xor ebx, ebx
+		jmp @@For2
+		@@In2:
+			mov eax, dword ptr[esi]
+			mov edx, dword ptr[esi + 4]
+			;--------------------------
+			.if eax == snake.x && edx == snake.y
+				jmp @@GameOver
+			.endif
+			;--------------------------
+			inc ebx
+			add esi, sizeof TAIL
+		@@For2:
+			cmp ebx, nTail
+			jb @@In2
+	.endif
+	;----------------------------------
 	@@Ret:
 		fn Sleep, MAX_STEP
 		Ret
@@ -268,6 +287,8 @@ DrawEvent proc uses ebx esi edi
 	.endif
 	;--------------------------
 	fn DrawSnake, snake.x, snake.y
+	;--------------------------
+	fn DrawFruit
 	;--------------------------
 	fn DrawScore
 	;--------------------------

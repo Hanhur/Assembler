@@ -48,3 +48,4 @@ cPanel        = 48
 .data
 	srect	SMALL_RECT <0, 0, 81, 41>
 	szClick db "Res\Click.wav", 0
+	szFruit db "Res\Treasure.wav", 0

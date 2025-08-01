@@ -2,6 +2,7 @@
 DrawSnake	proto :DWORD, :DWORD
 DrawTail	proto
 ClearTail	proto
+CreateSnake	proto
 
 
 SNAKE struct
@@ -32,6 +33,26 @@ TAIL ends
 
 	
 .code
+;============== Create Snake ===================
+CreateSnake proc uses ebx esi edi
+	;---------------------------
+	; 	Object Snake Init
+	;---------------------------
+	mov dword ptr[snake.x], 40
+	mov dword ptr[snake.y], 20
+	mov byte ptr[snake.direction], 31h
+	mov dword ptr[snake.speed], MAX_SPEED
+	mov dword ptr[spd_count], 0
+	;---------------------------
+	mov dword ptr[score], 0
+	mov dword ptr[score_old], 0
+	;---------------------------
+	fn ClearTail
+	;---------------------------
+	mov dword ptr[nTail], 0
+	;---------------------------
+	Ret
+CreateSnake endp
 ;============== Draw Snake =====================
 DrawSnake proc uses ebx esi edi x:DWORD, y:DWORD
 	fn gotoxy, x, y
@@ -50,17 +71,17 @@ DrawTail proc uses ebx esi edi
 	;-------------------------
 	xor ebx, ebx
 	jmp @@For
-		@@In:
-			mov eax, dword ptr[esi]
-			mov ebx, dword ptr[esi + 4]
-			;--------------------------
-			.if eax == 0 || ebx == 0
-				jmp @@Ret
-			.endif
-			;--------------------------
-			fn gotoxy, eax, ebx
-			;--------------------------
-			fn crt_putchar, 'o'
+	@@In:
+		mov eax, dword ptr[esi]
+		mov edx, dword ptr[esi + 4]
+		;--------------------------
+		.if eax == 0 || edx == 0
+			jmp @@Ret
+		.endif
+		;--------------------------
+		fn gotoxy, eax, edx
+		;--------------------------
+		fn crt_putchar, 'o'
 	;-------------------------
 	inc ebx
 	add esi, sizeof TAIL
@@ -78,9 +99,9 @@ ClearTail proc uses ebx esi edi
 	xor ebx, ebx
 	;--------------------------
 	jmp @@For
-		@@In:
-			mov dword ptr[esi], 0
-			mov dword ptr[esi + 4], 0
+	@@In:
+		mov dword ptr[esi], 0
+		mov dword ptr[esi + 4], 0
 	;---------------------------
 	add esi, sizeof TAIL
 	inc ebx
