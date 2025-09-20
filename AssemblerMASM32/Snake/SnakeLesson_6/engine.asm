@@ -2,19 +2,13 @@
 
 GameInit				proto
 GameUpdate				proto
-GamePause				proto
 GameOver				proto
-;-----------------------------------------
-DrawLevel				proto :DWORD
-Play_sound				proto :DWORD
-Keyboard_check_pressed	proto
-Keyboard_check			proto
 ;-----------------------------------------
 GameController			proto
 ;-----------------------------------------
 KeyEvent				proto
 DrawEvent				proto
-DrawScore				proto
+ShowScore				proto
 DrawPanel				proto
 StepEvent				proto
 ;-----------------------------------------
@@ -44,8 +38,6 @@ StepEvent				proto
 	szLevel_1	db "level_1.txt", 0
 
 
-
-
 .code
 ;================= Game Controller ===============
 GameController proc uses ebx esi edi
@@ -61,8 +53,9 @@ GameController endp
 GameInit proc uses ebx esi edi
 	fn crt_srand, rv(crt_time, 0)
 	;---------------------------
-	movzx eax, byte ptr[nLevel]
-	fn DrawLevel, eax
+	.if nLevel == 1
+		fn DrawLevel, offset szLevel_1, cLightYellow
+	.endif
 	;---------------------------
 	or eax, eax
 	;---------------------------
@@ -70,7 +63,7 @@ GameInit proc uses ebx esi edi
 	;---------------------------
 	fn DrawPanel
 	;---------------------------
-	fn SetColor, cLightGreen
+	fn SetConsoleColor, cLightGreen
 	;---------------------------
 	fn gotoxy, 1, 37
 	;---------------------------
@@ -98,7 +91,7 @@ GameInit proc uses ebx esi edi
 		;----------------------
 		fn gotoxy, 32, 19
 		;----------------------
-		fn SetColor, cBrown
+		fn SetConsoleColor, cBrown
 		;----------------------
 		fn crt_puts, "Load File failed"
 		;----------------------
@@ -182,7 +175,7 @@ GameUpdate proc uses ebx esi edi
 			mov eax, dword ptr[y]
 			dec eax
 			;--------------------
-			fn CheckPosition, x, eax
+			fn CheckCursorPosition, x, eax
 			;--------------------
 			.if al == 20h || al == fruit.sprite
 				dec dword ptr[snake.y]
@@ -193,7 +186,7 @@ GameUpdate proc uses ebx esi edi
 			mov eax, dword ptr[y]
 			inc eax
 			;--------------------
-			fn CheckPosition, x, eax
+			fn CheckCursorPosition, x, eax
 			;--------------------
 			.if al == 20h || al == fruit.sprite
 				inc dword ptr[snake.y]
@@ -204,7 +197,7 @@ GameUpdate proc uses ebx esi edi
 			mov eax, dword ptr[x]
 			dec eax
 			;--------------------
-			fn CheckPosition, eax, y
+			fn CheckCursorPosition, eax, y
 			;--------------------
 			.if al == 20h || al == fruit.sprite
 				dec dword ptr[snake.x]
@@ -215,7 +208,7 @@ GameUpdate proc uses ebx esi edi
 			mov eax, dword ptr[x]
 			inc eax
 			;--------------------
-			fn CheckPosition, eax, y
+			fn CheckCursorPosition, eax, y
 			;--------------------
 			.if al == 20h || al == fruit.sprite
 				inc dword ptr[snake.x]
@@ -244,41 +237,6 @@ GameUpdate proc uses ebx esi edi
 	.endif
 	Ret
 GameUpdate endp
-;================= Game Pause ====================
-GamePause proc uses ebx esi edi
-	LOCAL hOut:DWORD
-	;--------------------------
-	mov hOut, rv(GetStdHandle, -11)
-	;--------------------------
-	@@Pause:
-		fn SetColor, cLightCyan
-		;----------------------
-		fn gotoxy, 37, 18
-		;----------------------
-		fn crt_puts, "PAUSE"
-		;----------------------
-		fn Sleep, 500
-		;----------------------
-		fn SetColor, cLightGreen
-		;----------------------
-		fn gotoxy, 37, 18
-		;----------------------
-		fn crt_puts, "pause"
-		;----------------------
-		fn Sleep, 500
-		;----------------------
-		fn Keyboard_check
-		;----------------------
-		cmp al, 'p'
-		;----------------------
-		jne @@Pause
-		;----------------------
-		fn gotoxy, 37, 18
-		;----------------------
-		fn crt_puts, "     "
-		;----------------------
-	Ret
-GamePause endp
 ;================= Game Over =====================
 GameOver proc uses ebx esi edi
 	mov byte ptr[gameOver], 0
@@ -295,7 +253,7 @@ GameOver proc uses ebx esi edi
 	mov edi, 40
 	;-----------------------------
 	@@Do:
-		fn SetColor, cBrown 
+		fn SetConsoleColor, cBrown 
 		;-------------------------
 		fn gotoxy, 35, ebx
 		;-------------------------
@@ -309,7 +267,7 @@ GameOver proc uses ebx esi edi
 		;-------------------------
 		inc ebx
 		;-------------------------
-		fn SetColor, cWhite 
+		fn SetConsoleColor, cWhite 
 		;-------------------------
 		fn gotoxy, 24, edi
 		;-------------------------
@@ -336,11 +294,6 @@ GameOver proc uses ebx esi edi
 		;-------------------------
 		fn Play_sound, offset szClick
 		;-------------------------
-
-
-
-
-
 	Ret
 GameOver endp 
 ;================= Step Event ====================
@@ -387,7 +340,11 @@ StepEvent proc uses ebx esi edi
 StepEvent endp
 ;================= Key Event =====================
 KeyEvent proc uses ebx esi edi
+	mov byte ptr[bKey], 31h
+	;-------------------------
 	fn Keyboard_check
+	;-------------------------
+	mov byte ptr[bKey], al
 	;-------------------------
 	.if byte ptr[bKey] == KEY_ESC
 		fn mfmPause
@@ -395,7 +352,7 @@ KeyEvent proc uses ebx esi edi
 		mov byte ptr[closeConsole], 1
 		;---------------------
 	.elseif byte ptr[bKey] == 'p'
-		fn GamePause
+		fn GamePause, 37, 18
 	.elseif byte ptr[bKey] == 'w' || byte ptr[bKey] == 's' || byte ptr[bKey] == 'a' || byte ptr[bKey] == 'd'
 		mov byte ptr[snake.direction], al
 	.endif
@@ -411,44 +368,24 @@ DrawEvent proc uses ebx esi edi
 	;--------------------------
 	fn DrawFruit
 	;--------------------------
-	fn DrawScore
+	fn ShowScore
 	;--------------------------
 	Ret
 DrawEvent endp
-;================= Keyboard_check ================
-Keyboard_check proc uses ebx esi edi
-	mov byte ptr[bKey], 31h
-	;-------------------------------
-	fn crt__kbhit
-	;-------------------------------
-	or eax, eax
-	;-------------------------------
-	je @@Ret
-	fn crt__getch
-	;-------------------------------
-	mov byte ptr[bKey], al
-	;-------------------------------
-	@@Ret:
-		Ret
-Keyboard_check endp
-;================= Draw Score ====================
-DrawScore proc uses ebx esi edi
+;================= Show Score ====================
+ShowScore proc uses ebx esi edi
 	mov ebx, score
 	;--------------------------
 	.if ebx > score_old
-		fn gotoxy, 8, 37
-		;----------------------
-		fn SetColor, cLightGreen
-		;----------------------
-		print ustr$(ebx) ;Makros
+		fn DrawScore, 8, 37, cLightGreen, ebx
 		;----------------------
 		mov dword ptr[score_old], ebx
 	.endif
 	Ret
-DrawScore endp
+ShowScore endp
 ;================= Draw Panel ====================
 DrawPanel proc uses ebx esi edi
-	fn SetColor, cPanel
+	fn SetConsoleColor, cPanel
 	;--------------------------
 	fn gotoxy, 21, 37
 	;--------------------------
@@ -456,67 +393,3 @@ DrawPanel proc uses ebx esi edi
 	;--------------------------
 	Ret
 DrawPanel endp
-;================= Draw Level ====================
-DrawLevel proc uses ebx esi edi nLvl:DWORD
-	LOCAL hFile:DWORD
-	LOCAL buffer[256]:BYTE
-	;------------------------------
-	.if nLvl == 1
-		fn crt_fopen, offset szLevel_1, "r"
-		;--------------------------
-		or eax, eax
-		je @@Ret
-		;--------------------------
-		mov dword ptr[hFile], eax
-		;--------------------------
-		push eax
-		;--------------------------
-		fn SetColor, cLightYellow
-		;--------------------------
-		lea ebx, buffer
-		;--------------------------
-		@@While:
-			fn crt_fgets, ebx, 256, hFile
-			;----------------------
-			or eax, eax
-			;----------------------
-			je @@CloseFile
-			;----------------------
-			fn crt_printf, eax
-			jmp @@While
-		;--------------------------
-		@@CloseFile:
-			pop eax
-			;----------------------
-			fn crt_fclose, eax
-			;----------------------
-			inc eax
-	.endif
-	;------------------------------
-	@@Ret:
-		Ret
-DrawLevel endp
-;================= Nazhatie klavishi ==============
-Keyboard_check_pressed proc uses ebx esi edi
-	fn FlushConsoleInputBuffer, rv(GetStdHandle, -10)
-	;---------------------------------------
-	@@:
-		fn Sleep, 1000
-		fn crt__kbhit ; Proverajet nazatie klavishi
-		;----------------
-		or eax, eax
-		je @B ;Nazad (Back)
-		;----------------
-		fn crt__getch ; Vozvrat nazaty symbol iz registra eax
-		;----------------
-		mov byte ptr[bKey], al
-		;----------------
-	Ret
-Keyboard_check_pressed endp
-;============================================
-Play_sound proc uses ebx esi edi lpFile:DWORD
-	
-	fn PlaySound, lpFile, 0, SND_FILENAME or SND_ASYNC
-
-	Ret
-Play_sound endp

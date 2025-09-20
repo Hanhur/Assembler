@@ -32,6 +32,8 @@ MainMenu proc uses ebx esi edi
 	;-------------------------
 	.while closeConsole == 0 && gameOver == 0
 		.while byte ptr[bKey] != KEY_ENTER
+			mov byte ptr[bKey], 31h
+			;--------------------------
 			fn SetConsoleTextAttribute, hOut, cStart
 			;--------------------------
 			fn gotoxy, 37, 18
@@ -48,6 +50,8 @@ MainMenu proc uses ebx esi edi
 			fn crt_printf, "ABOUT"
 			;--------------------------
 			fn Keyboard_check_pressed
+			;-------------------------
+			mov byte ptr[bKey], al
 			;--------------------------
 			.if al == 'w' && choice == 2
 				dec dword ptr[choice]
@@ -98,7 +102,7 @@ MainMenu proc uses ebx esi edi
 		;-----------------------------------
 		fn crt_system, offset szCls
 		;-----------------------------------
-		mov byte ptr[bKey], 30h
+		mov byte ptr[bKey], 31h
 	.endw
 	Ret
 MainMenu endp
@@ -121,7 +125,7 @@ AboutMenu proc uses ebx esi edi
 	;--------------------------
 	push eax
 	;--------------------------
-	fn SetColor, cLightRed
+	fn SetConsoleColor, cLightRed
 	;--------------------------
 	lea ebx, buffer
 	;--------------------------
@@ -137,7 +141,7 @@ AboutMenu proc uses ebx esi edi
 		inc bStart
 		;----------------------
 		.if bStart == 9
-			fn SetColor, cLightYellow
+			fn SetConsoleColor, cLightYellow
 		.endif
 		;----------------------
 		jmp @@While

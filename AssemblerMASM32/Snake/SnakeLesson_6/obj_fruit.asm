@@ -29,7 +29,7 @@ CreateFruit proc uses ebx esi edi
 		fn RangedRand, 1, 35
 		mov dword ptr[y], eax
 		;------------------------
-		fn CheckPosition, x, y
+		fn CheckCursorPosition, x, y
 		;------------------------
 		cmp al, 20h
 		je @F
@@ -61,7 +61,7 @@ DrawFruit proc uses ebx esi edi
 	.endif
 	fn gotoxy, fruit.x, fruit.y
 	;--------------------------
-	fn SetColor, cLightRed
+	fn SetConsoleColor, cLightRed
 	;--------------------------
 	movzx eax, fruit.sprite
 	fn crt_putchar, eax

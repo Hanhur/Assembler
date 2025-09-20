@@ -61,7 +61,7 @@ CreateSnake endp
 DrawSnake proc uses ebx esi edi x:DWORD, y:DWORD
 	fn gotoxy, x, y
 	;--------------------------
-	fn SetColor, cLightCyan
+	fn SetConsoleColor, cLightCyan
 	;--------------------------
 	fn crt_putchar, 'O'
 	;--------------------------
@@ -69,7 +69,7 @@ DrawSnake proc uses ebx esi edi x:DWORD, y:DWORD
 DrawSnake endp
 ;================= Draw Tail =====================
 DrawTail proc uses ebx esi edi
-	fn SetColor, cLightCyan
+	fn SetConsoleColor, cLightCyan
 	;-------------------------
 	lea esi, tail
 	;-------------------------
