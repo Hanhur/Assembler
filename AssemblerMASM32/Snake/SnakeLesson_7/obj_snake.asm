@@ -1,18 +1,8 @@
 
-DrawSnake	proto :DWORD, :DWORD
+DrawSnake	proto
 DrawTail	proto
 ClearTail	proto
 CreateSnake	proto
-
-
-SNAKE struct
-	x			dword ?
-	y			dword ?
-	direction	db ?
-				db ?
-	speed		dword ?
-SNAKE ends
-;-------------------------
 
 TAIL struct
 	x	dword ?
@@ -27,7 +17,7 @@ TAIL ends
 	
 	
 .data?
-	snake	SNAKE <>
+	snake	GAME_OBJECT <>
 	tail	TAIL MAX_TAIL dup(<>)
 	spd_count	dd ?
 	nTail		dd ?
@@ -45,6 +35,8 @@ CreateSnake proc uses ebx esi edi
 	mov byte ptr[snake.direction], 31h
 	mov dword ptr[snake.speed], MAX_SPEED
 	mov dword ptr[spd_count], 0
+	
+	fn CreateObject, offset snake, 40, 20, MAX_SPEED, 0, 0, 0, 31h, 0, 0, 'O'
 	;---------------------------
 	mov dword ptr[score], 0
 	mov dword ptr[score_old], 0
@@ -58,18 +50,19 @@ CreateSnake proc uses ebx esi edi
 	Ret
 CreateSnake endp
 ;============== Draw Snake =====================
-DrawSnake proc uses ebx esi edi x:DWORD, y:DWORD
-	fn gotoxy, x, y
+DrawSnake proc uses ebx esi edi
+	fn gotoxy, snake.x, snake.y
 	;--------------------------
-	fn SetConsoleColor, cLightCyan
+	fn SetConsoleColor, 0, cLightCyan
 	;--------------------------
-	fn crt_putchar, 'O'
+	movzx eax, byte ptr[snake.sprite]
+	fn crt_putchar, eax
 	;--------------------------
 	Ret
 DrawSnake endp
 ;================= Draw Tail =====================
 DrawTail proc uses ebx esi edi
-	fn SetConsoleColor, cLightCyan
+	fn SetConsoleColor, 0, cLightCyan
 	;-------------------------
 	lea esi, tail
 	;-------------------------

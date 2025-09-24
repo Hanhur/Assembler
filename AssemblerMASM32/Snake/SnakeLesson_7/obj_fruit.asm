@@ -2,18 +2,11 @@
 CreateFruit		proto
 DrawFruit		proto
 
-FRUIT struct
-	x		dword ?
-	y		dword ?
-	sprite	db ?
-	reserv	db ?
-FRUIT ends
-;-------------------------------
 TIME_BLINK	equ 10
 ;-------------------------------
 
 .data?
-	fruit	FRUIT <>
+	fruit	GAME_OBJECT <>
 	blink	dd ?
 	
 .code
@@ -36,13 +29,12 @@ CreateFruit proc uses ebx esi edi
 		jmp @@Do
 	;----------------------------
 	@@:
-		mov eax, dword ptr[x]
-		mov dword ptr[fruit.x], eax
+		mov ebx, dword ptr[x]
 		;------------------------
-		mov eax, dword ptr[y]
-		mov dword ptr[fruit.y], eax
+		mov edx, dword ptr[y]
 	;----------------------------
-	mov byte ptr[fruit.sprite], 1
+	fn CreateObject, offset fruit, ebx, edx, 0, 0, 0, 0, 0, 0, 0, 1
+	;----------------------------
 	mov blink, 0
 	;----------------------------
 	Ret
@@ -61,7 +53,7 @@ DrawFruit proc uses ebx esi edi
 	.endif
 	fn gotoxy, fruit.x, fruit.y
 	;--------------------------
-	fn SetConsoleColor, cLightRed
+	fn SetConsoleColor, 0, cLightRed
 	;--------------------------
 	movzx eax, fruit.sprite
 	fn crt_putchar, eax
