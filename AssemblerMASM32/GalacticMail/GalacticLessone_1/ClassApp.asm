@@ -4,6 +4,12 @@ ClassApp_onExecute	proto
 
 
 .const
+	ROOM_WIDTH				equ 640
+	ROOM_HEIGHT				equ 480
+	;-------------------------------
+	WINDOW_WIDTH			equ 80
+	WINDOW_HEIGHT			equ 40
+	;-------------------------------
 	STATE_NULL				equ 0
 	STATE_TITLE				equ 1
 	STATE_ROOM_FIRST		equ 2
@@ -16,6 +22,9 @@ ClassApp_onExecute	proto
 .data
 	id_state	dd STATE_NULL
 	next_state	dd STATE_NULL
+	;--------------------------
+	hWnd		dd 0
+	hInstance	dd 0
 	;--------------------------
 	include ClassApp_onInit.asm
 	include ClassApp_onStart.asm

@@ -5,6 +5,8 @@ include ClassApp.asm
 
 .code
 start:
+	fn HideConsole
+	;--------------------
 	fn Main
 	;--------------------
 	fn ExitProcess, eax
