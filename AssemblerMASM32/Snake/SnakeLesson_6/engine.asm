@@ -54,7 +54,7 @@ GameInit proc uses ebx esi edi
 	fn crt_srand, rv(crt_time, 0)
 	;---------------------------
 	.if nLevel == 1
-		fn DrawLevel, offset szLevel_1, cLightYellow
+		fn DrawLevel, offset szLevel_1, 0, cLightYellow
 	.endif
 	;---------------------------
 	or eax, eax
@@ -63,7 +63,7 @@ GameInit proc uses ebx esi edi
 	;---------------------------
 	fn DrawPanel
 	;---------------------------
-	fn SetConsoleColor, cLightGreen
+	fn SetConsoleColor, 0, cLightGreen
 	;---------------------------
 	fn gotoxy, 1, 37
 	;---------------------------
@@ -72,7 +72,7 @@ GameInit proc uses ebx esi edi
 	;---------------------------
 	fn CreateSnake
 	;---------------------------
-	fn DrawSnake, snake.x, snake.y
+	fn DrawSnake
 	;---------------------------
 	fn CreateFruit
 	;---------------------------
@@ -91,7 +91,7 @@ GameInit proc uses ebx esi edi
 		;----------------------
 		fn gotoxy, 32, 19
 		;----------------------
-		fn SetConsoleColor, cBrown
+		fn SetConsoleColor, 0, cBrown
 		;----------------------
 		fn crt_puts, "Load File failed"
 		;----------------------
@@ -232,20 +232,18 @@ GameUpdate proc uses ebx esi edi
 			;--------------------------
 			add score, 10
 			;--------------------------
-			fn Play_sound, offset szFruit
+			fn Play_sound, offset szFruit, 0
 		.endif
 	.endif
 	Ret
 GameUpdate endp
 ;================= Game Over =====================
 GameOver proc uses ebx esi edi
-	mov byte ptr[gameOver], 0
-	;-----------------------------
 	fn mfmPause
 	;-----------------------------
 	fn crt_system, offset szCls
 	;-----------------------------
-	fn Play_sound, offset szLose
+	fn Play_sound, offset szLose, 0
 	;-----------------------------
 	xor ebx, ebx
 	inc ebx
@@ -253,7 +251,7 @@ GameOver proc uses ebx esi edi
 	mov edi, 40
 	;-----------------------------
 	@@Do:
-		fn SetConsoleColor, cBrown 
+		fn SetConsoleColor, 0, cBrown 
 		;-------------------------
 		fn gotoxy, 35, ebx
 		;-------------------------
@@ -267,7 +265,7 @@ GameOver proc uses ebx esi edi
 		;-------------------------
 		inc ebx
 		;-------------------------
-		fn SetConsoleColor, cWhite 
+		fn SetConsoleColor, 0, cWhite 
 		;-------------------------
 		fn gotoxy, 24, edi
 		;-------------------------
@@ -292,7 +290,9 @@ GameOver proc uses ebx esi edi
 		cmp al, KEY_ENTER
 		jne @@L0
 		;-------------------------
-		fn Play_sound, offset szClick
+		mov byte ptr[gameOver], 0
+		;-------------------------
+		fn Play_sound, offset szClick, 0
 		;-------------------------
 	Ret
 GameOver endp 
@@ -349,10 +349,9 @@ KeyEvent proc uses ebx esi edi
 	.if byte ptr[bKey] == KEY_ESC
 		fn mfmPause
 		mov byte ptr[gameOver], 0
-		mov byte ptr[closeConsole], 1
 		;---------------------
 	.elseif byte ptr[bKey] == 'p'
-		fn GamePause, 37, 18
+		fn GamePause, 37, 18, 0
 	.elseif byte ptr[bKey] == 'w' || byte ptr[bKey] == 's' || byte ptr[bKey] == 'a' || byte ptr[bKey] == 'd'
 		mov byte ptr[snake.direction], al
 	.endif
@@ -364,7 +363,7 @@ DrawEvent proc uses ebx esi edi
 		fn DrawTail
 	.endif
 	;--------------------------
-	fn DrawSnake, snake.x, snake.y
+	fn DrawSnake
 	;--------------------------
 	fn DrawFruit
 	;--------------------------
@@ -377,7 +376,7 @@ ShowScore proc uses ebx esi edi
 	mov ebx, score
 	;--------------------------
 	.if ebx > score_old
-		fn DrawScore, 8, 37, cLightGreen, ebx
+		fn DrawScore, 8, 37, 0, cLightGreen, ebx
 		;----------------------
 		mov dword ptr[score_old], ebx
 	.endif
@@ -385,7 +384,7 @@ ShowScore proc uses ebx esi edi
 ShowScore endp
 ;================= Draw Panel ====================
 DrawPanel proc uses ebx esi edi
-	fn SetConsoleColor, cPanel
+	fn SetConsoleColor, 3, 0
 	;--------------------------
 	fn gotoxy, 21, 37
 	;--------------------------

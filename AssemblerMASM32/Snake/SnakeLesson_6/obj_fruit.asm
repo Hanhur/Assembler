@@ -61,7 +61,7 @@ DrawFruit proc uses ebx esi edi
 	.endif
 	fn gotoxy, fruit.x, fruit.y
 	;--------------------------
-	fn SetConsoleColor, cLightRed
+	fn SetConsoleColor, 0, cLightRed
 	;--------------------------
 	movzx eax, fruit.sprite
 	fn crt_putchar, eax

@@ -60,7 +60,7 @@ MainMenu proc uses ebx esi edi
 				mov dword ptr[cStart], cWhite
 				mov dword ptr[cAbout], cBrown
 				;---------------------------
-				fn Play_sound, offset szClick
+				fn Play_sound, offset szClick, 0
 				;---------------------------
 			.elseif al == 'w' && choice == 3
 				dec dword ptr[choice]
@@ -69,7 +69,7 @@ MainMenu proc uses ebx esi edi
 				mov dword ptr[cStart], cBrown
 				mov dword ptr[cAbout], cBrown
 				;---------------------------
-				fn Play_sound, offset szClick
+				fn Play_sound, offset szClick, 0
 				;---------------------------
 			.elseif al == 's' && choice == 1
 				inc dword ptr[choice]
@@ -78,7 +78,7 @@ MainMenu proc uses ebx esi edi
 				mov dword ptr[cStart], cBrown
 				mov dword ptr[cAbout], cBrown
 				;---------------------------
-				fn Play_sound, offset szClick
+				fn Play_sound, offset szClick, 0
 				;---------------------------
 			.elseif al == 's' && choice == 2
 				inc dword ptr[choice]
@@ -87,7 +87,7 @@ MainMenu proc uses ebx esi edi
 				mov dword ptr[cStart], cBrown
 				mov dword ptr[cAbout], cWhite
 				;---------------------------
-				fn Play_sound, offset szClick
+				fn Play_sound, offset szClick, 0
 				;---------------------------
 			.endif
 		.endw
@@ -125,7 +125,7 @@ AboutMenu proc uses ebx esi edi
 	;--------------------------
 	push eax
 	;--------------------------
-	fn SetConsoleColor, cLightRed
+	fn SetConsoleColor, 0, cLightRed
 	;--------------------------
 	lea ebx, buffer
 	;--------------------------
@@ -141,7 +141,7 @@ AboutMenu proc uses ebx esi edi
 		inc bStart
 		;----------------------
 		.if bStart == 9
-			fn SetConsoleColor, cLightYellow
+			fn SetConsoleColor, 0, cLightYellow
 		.endif
 		;----------------------
 		jmp @@While
@@ -153,7 +153,7 @@ AboutMenu proc uses ebx esi edi
 		;----------------------
 		fn Keyboard_check_pressed
 		;----------------------
-		fn Play_sound, offset szClick
+		fn Play_sound, offset szClick, 0
 	;------------------------------
 	@@Ret:
 		Ret
