@@ -1,18 +1,19 @@
 
 
-GameInit				proto
-GameUpdate				proto
-GameOver				proto
+StartGameEvent	proto
+BeginStepEvent	proto
+GameOver		proto
 ;-----------------------------------------
-GameController			proto
+GameController	proto
 ;-----------------------------------------
-KeyEvent				proto
-DrawEvent				proto
-ShowScore				proto
-DrawPanel				proto
-StepEvent				proto
+KeyEvent		proto
+DrawEvent		proto
+ShowScore		proto
+DrawPanel		proto
+StepEvent		proto
+LoadGameEvent	proto
 ;-----------------------------------------
-
+TimeEvent		proto :DWORD, :DWORD, :DWORD, :DWORD, :DWORD
 
 .const
 ;---------------- Keys -------------------
@@ -39,8 +40,17 @@ StepEvent				proto
 
 
 .code
+;============================== Timer Event ===========================
+TimeEvent proc uses ebx esi edi idTimer:DWORD, uMsg:DWORD, dwUser:DWORD, Res1:DWORD, Res2:DWORD
+	
+	fn GameController
+
+	Ret
+TimeEvent endp
 ;================= Game Controller ===============
 GameController proc uses ebx esi edi
+	fn BeginStepEvent
+	;-------------------------------
 	fn KeyEvent
 	;-------------------------------
 	fn DrawEvent
@@ -49,8 +59,8 @@ GameController proc uses ebx esi edi
 	;-------------------------------
 	Ret
 GameController endp
-;================= Game Init =====================
-GameInit proc uses ebx esi edi
+;================= Start Game Event =====================
+StartGameEvent proc uses ebx esi edi
 	fn crt_srand, rv(crt_time, 0)
 	;---------------------------
 	.if nLevel == 1
@@ -83,6 +93,9 @@ GameInit proc uses ebx esi edi
 		fn mfmPause
 	.endif
 	;---------------------------
+	fn timeSetEvent, MAX_STEP, 0, offset TimeEvent, 0, 1
+	mov dword ptr[id_timer], eax
+	;---------------------------
 	@@Ret:
 		Ret
 	;--------------------------
@@ -97,9 +110,9 @@ GameInit proc uses ebx esi edi
 		;----------------------
 		fn Sleep, 2000
 		jmp @@Ret
-GameInit endp
-;================= Game Update ===================
-GameUpdate proc uses ebx esi edi
+StartGameEvent endp
+;================= Begin Step Event ===================
+BeginStepEvent proc uses ebx esi edi
 	LOCAL x:DWORD
 	LOCAL y:DWORD
 	LOCAL xprev:DWORD
@@ -236,9 +249,18 @@ GameUpdate proc uses ebx esi edi
 		.endif
 	.endif
 	Ret
-GameUpdate endp
+BeginStepEvent endp
+;================= Load Game Event ===============
+LoadGameEvent proc uses ebx esi edi
+
+
+
+	Ret
+LoadGameEvent endp
 ;================= Game Over =====================
 GameOver proc uses ebx esi edi
+	fn timeKillEvent, id_timer
+	;-----------------------------
 	fn mfmPause
 	;-----------------------------
 	fn crt_system, offset szCls
@@ -335,7 +357,6 @@ StepEvent proc uses ebx esi edi
 	.endif
 	;----------------------------------
 	@@Ret:
-		fn Sleep, MAX_STEP
 		Ret
 StepEvent endp
 ;================= Key Event =====================
@@ -347,11 +368,19 @@ KeyEvent proc uses ebx esi edi
 	mov byte ptr[bKey], al
 	;-------------------------
 	.if byte ptr[bKey] == KEY_ESC
+		fn timeKillEvent, id_timer
+		;----------------------
 		fn mfmPause
 		mov byte ptr[gameOver], 0
 		;---------------------
 	.elseif byte ptr[bKey] == 'p'
+		fn timeKillEvent, id_timer
+		;-----------------------
 		fn GamePause, 37, 18, 0
+		;-----------------------
+		fn timeSetEvent, MAX_STEP, 0, offset TimeEvent, 0, 1
+		mov dword ptr[id_timer], eax
+		;-----------------------
 	.elseif byte ptr[bKey] == 'w' || byte ptr[bKey] == 's' || byte ptr[bKey] == 'a' || byte ptr[bKey] == 'd'
 		mov byte ptr[snake.direction], al
 	.endif
