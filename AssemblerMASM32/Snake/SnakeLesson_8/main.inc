@@ -1,6 +1,6 @@
-include \masm32\consnakegamelib\congame.inc
+include \masm32\congamelib\congame.inc
 
-includelib \masm32\consnakegamelib\congame.lib
+includelib \masm32\congamelib\congame.lib
 
 include xm.asm
 

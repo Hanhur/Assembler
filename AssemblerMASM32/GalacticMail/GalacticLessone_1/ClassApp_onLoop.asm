@@ -1,10 +1,7 @@
 ClassApp_onLoop		proto
 
-
-.code 
-;========================= ClassApp_onLoop ===========================
+.code
 ClassApp_onLoop proc uses ebx esi edi
-
 
 
 

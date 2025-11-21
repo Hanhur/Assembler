@@ -1,8 +1,6 @@
 ClassApp_onEvent	proto
 
-
-.code 
-;======================== ClassApp_onEvent ===========================
+.code
 ClassApp_onEvent proc uses ebx esi edi
 
 

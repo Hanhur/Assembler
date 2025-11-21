@@ -1,8 +1,6 @@
 ClassApp_updateState	proto
 
-
 .code
-;====================== ClassApp_updateState ==========================
 ClassApp_updateState proc uses ebx esi edi
 	.if next_state != STATE_NULL
 		switch next_state
@@ -17,10 +15,10 @@ ClassApp_updateState proc uses ebx esi edi
 			case STATE_ROOM_COMPLETED
 			
 		endsw
-		;------------------------------------
+		;---------------------------------
 		mov ebx, dword ptr[next_state]
 		mov dword ptr[id_state], ebx
-		;------------------------------------
+		;---------------------------------
 		mov dword ptr[next_state], STATE_NULL
 	.endif
 	Ret

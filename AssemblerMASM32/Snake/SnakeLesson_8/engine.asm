@@ -139,7 +139,6 @@ BeginStepEvent proc uses ebx esi edi
 			mov eax, dword ptr[x]
 			mov dword ptr[esi], eax
 			mov eax, dword ptr[y]
-			
 			mov dword ptr[esi + 4], eax
 			;-------------------
 			mov eax, dword ptr[esi + 8]
@@ -157,7 +156,7 @@ BeginStepEvent proc uses ebx esi edi
 			jmp @@For
 			@@In:
 				mov edi, dword ptr[lpObj]
-				;----------------------------
+				;---------------------------
 				mov eax, dword ptr[esi]
 				mov dword ptr[esi + 8], eax ; xStart
 				mov edx, dword ptr[esi + 4]
@@ -183,7 +182,7 @@ BeginStepEvent proc uses ebx esi edi
 		;-----------------------
 		fn gotoxy, snake.obj.x, snake.obj.y ;stiranie snake po jevo koordinatam
 		;-----------------------
-		fn crt_putchar, 20h
+		putchar 20h
 		;-----------------------
 		.if snake.direction == 'w'
 			mov eax, dword ptr[y]

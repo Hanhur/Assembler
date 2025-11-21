@@ -1,7 +1,6 @@
-ClassApp_onRender	proto 
+ClassApp_onRender	proto
 
-.code 
-;=========================== ClassApp_onRender =======================
+.code
 ClassApp_onRender proc uses ebx esi edi
 
 
