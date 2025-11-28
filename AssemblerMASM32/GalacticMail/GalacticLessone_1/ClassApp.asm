@@ -1,7 +1,14 @@
-
+include ClassAppTimer.asm
+;------------------------------------
 ClassApp_onExecute	proto
 ;------------------------------------
 .const
+	ROOM_WIDTH				equ 640
+	ROOM_HEIGHT				equ 480
+	;-------------------------------
+	WINDOW_WIDTH			equ 80
+	WINDOW_HEIGHT			equ 40
+	;-------------------------------
 	STATE_NULL			 	equ 0
 	STATE_TITLE			 	equ 1
 	STATE_ROOM_FIRST	 	equ 2
