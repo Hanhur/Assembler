@@ -21,6 +21,9 @@ ClassApp_onExecute	proto
 	id_state	dd STATE_NULL
 	next_state	dd STATE_NULL
 	;-------------------------------
+	hWnd		dd 0
+	hInstance	dd 0
+	;-------------------------------
 	include ClassApp_onInit.asm
 	include ClassApp_onStart.asm
 	include ClassApp_onQuit.asm

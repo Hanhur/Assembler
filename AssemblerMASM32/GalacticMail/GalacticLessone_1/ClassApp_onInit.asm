@@ -12,7 +12,15 @@ ClassApp_onInit proc uses ebx esi edi
 	;---------------------------------
 	fn SetConsoleWindowSize, WINDOW_WIDTH, WINDOW_HEIGHT
 	;---------------------------------
-	
+	;fn SetConsoleCenterScreen, HWND_TOP
+	;---------------------------------
+	fn GetModuleHandle, 0
+	;---------------------------------
+	mov dword ptr[hInstance], eax
+	;---------------------------------
+	fn GetConsoleHwnd
+	;---------------------------------
+	mov dword ptr[hWnd], eax
 	;---------------------------------
 	mov eax, dword ptr[dwReturnValue]
 	Ret
