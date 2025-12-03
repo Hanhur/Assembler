@@ -1,4 +1,5 @@
 include ClassAppTimer.asm
+include ClassIMG.asm
 ;------------------------------------
 ClassApp_onExecute	proto
 ;------------------------------------
@@ -16,6 +17,8 @@ ClassApp_onExecute	proto
 	STATE_ROOM_THIRD		equ 4
 	STATE_ROOM_COMPLETED	equ 5
 	STATE_EXIT				equ 6
+	;-------------------------------
+	IDI_BACKGROUND			equ 100
 ;-----------------------------------
 .data
 	id_state	dd STATE_NULL
@@ -23,7 +26,12 @@ ClassApp_onExecute	proto
 	;-------------------------------
 	hWnd		dd 0
 	hInstance	dd 0
+	window		dd 0
+	screen		dd 0
+	screenBmp	dd 0
+	bmpOld		dd 0
 	;-------------------------------
+	include ClassRoom.asm
 	include ClassApp_onInit.asm
 	include ClassApp_onStart.asm
 	include ClassApp_onQuit.asm

@@ -22,6 +22,29 @@ ClassApp_onInit proc uses ebx esi edi
 	;---------------------------------
 	mov dword ptr[hWnd], eax
 	;---------------------------------
+	;		Create Device Context
+	;---------------------------------
+	fn GetDC, eax
+	mov dword ptr[window], eax
+	;---------------------------------
+	;		Create Virtual Window
+	;---------------------------------
+	fn CreateCompatibleDC, eax 
+	mov dword ptr[screen], eax
+	;---------------------------------
+	fn GetSystemMetrics, 1
+	push eax
+	fn GetSystemMetrics, 0
+	push eax
+	push dword ptr[window]
+	call CreateCompatibleBitmap
+	;---------------------------------
+	mov dword ptr[screenBmp], eax
+	;---------------------------------
+	fn SelectObject, screen, eax
+	;---------------------------------
+	mov dword ptr[bmpOld], eax
+	;---------------------------------
 	mov eax, dword ptr[dwReturnValue]
 	Ret
 ClassApp_onInit endp
