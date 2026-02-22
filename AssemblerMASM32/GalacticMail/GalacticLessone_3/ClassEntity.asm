@@ -1,5 +1,6 @@
-ClassEntity_Create	proto :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD
-
+ClassEntity_Create		proto :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD
+;---------------------------- Private functions class Entity -----------------------
+ClassEntity_LoadSprire	proto :DWORD, :DWORD
 
 
 SPRITE struct
@@ -37,7 +38,7 @@ EXPLOSION			= 8
 ID_TITLE			= 9
 ;----------------------------------
 .const
-	
+	IDI_MOON	equ 101
 	
 	
 .data
@@ -63,6 +64,7 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 		;-------------------------------
 		mov eax, sizeof ENTITY
 		mul entity_num
+		;-------------------------------
 		fn crt_memcpy, pTemp, pEntity, eax
 		;-------------------------------
 		fn LocalFree, pEntity
@@ -81,8 +83,49 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 		mov eax, dword ptr[esi].sprite
 		fn DeleteObject, eax
 	.endif
+	;-----------------------------------
+	mov eax, id
+	mov dword ptr[esi].id, ebx
+	;-----------------------------------
+	.if ebx == MOON || ebx == BASE_MOON || ebx == ASTEROID
+		mov dword ptr[esi].speed, 4
+		;-------------------------------
+		.if ebx == MOON || ebx == BASE_MOON
+			
+		.elseif ebx == ASTEROID
+		
+		.endif
+	.elseif ebx == PLAYER
+	
+	.elseif ebx == EXPLOSION
+	
+	.elseif ebx == ID_TITLE
+	
+	.endif
+	;-----------------------------------
+	mov eax, wd
+	mov dword ptr[esi].w, eax
+	;-----------------------------------
+	mov eax, ht
+	mov dword ptr[esi].h, eax
+	;-----------------------------------
+	mov eax, x
+	mov dword ptr[esi].x, eax
+	;-----------------------------------
+	mov eax, y
+	mov dword ptr[esi].y, eax
+	;-----------------------------------
 	assume esi:nothing
 	;-----------------------------------
 	inc entity_num
 	Ret
 ClassEntity_Create endp
+;====================================================================
+ClassEntity_LoadSprire proc uses ebx esi edi hInst:DWORD, idRes:DWORD
+
+
+
+
+
+	Ret
+ClassEntity_LoadSprire endp

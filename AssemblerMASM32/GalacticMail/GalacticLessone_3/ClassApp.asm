@@ -1,6 +1,5 @@
 include ClassAppTimer.asm
 include ClassIMG.asm
-include ClassEntity.asm
 ;------------------------------------
 ClassApp_onExecute	proto
 ;------------------------------------
@@ -32,6 +31,7 @@ ClassApp_onExecute	proto
 	screenBmp	dd 0
 	bmpOld		dd 0
 	;-------------------------------
+	include ClassEntity.asm
 	include ClassRoom.asm
 	include ClassApp_onInit.asm
 	include ClassApp_onStart.asm

@@ -73,11 +73,35 @@ ClassRoom_CreateRoom proc uses ebx esi edi idRoom:DWORD
 ClassRoom_CreateRoom endp
 ;======================================================================
 ClassRoom_onQuit proc uses ebx esi edi
-
-
-
-
-	Ret
+	mov eax, dword ptr[pEntity]
+	or eax, eax
+	je @@Ret
+	;----------------------------------
+	xor ebx, ebx
+	mov esi, pEntity
+	assume esi:PTR ENTITY
+	jmp @@For
+	;----------------------------------
+	@@In:
+		mov eax, dword ptr[esi].sprite
+		fn DeleteObject, eax
+		;------------------------------
+		add esi, sizeof ENTITY
+		inc ebx
+	;----------------------------------
+	@@For:
+		cmp ebx, entity_num
+		jl @@In
+	;----------------------------------
+	assume esi:nothing
+	;----------------------------------
+	fn LocalFree, pEntity
+	mov dword ptr[pEntity], 0
+	;----------------------------------
+	mov dword ptr[entity_num], 0
+	;----------------------------------
+	@@Ret:
+		Ret
 ClassRoom_onQuit endp
 ;======================================================================
 ClassRoom_onEvent proc uses ebx esi edi idState:DWORD
