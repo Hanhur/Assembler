@@ -1,6 +1,11 @@
 ClassEntity_Create		proto :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD, :DWORD
+ClassEntity_onRender	proto :DWORD
 ;---------------------------- Private functions class Entity -----------------------
-ClassEntity_LoadSprire	proto :DWORD, :DWORD
+ClassEntity_LoadSprire		proto :DWORD, :DWORD
+ClassEntity_GetCurrentFrame	proto :DWORD
+ClassEntity_SetSprite		proto :DWORD, :DWORD, :DWORD, :DWORD
+ClassEntity_SetCurrentFrame	proto :DWORD, :DWORD
+ClassEntity_SetRandomFrame	proto :DWORD, :DWORD
 
 
 SPRITE struct
@@ -84,6 +89,8 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 		fn DeleteObject, eax
 	.endif
 	;-----------------------------------
+	fn ClassEntity_SetSprite, esi, 0, maxFrame, rate
+	;-----------------------------------
 	mov eax, id
 	mov dword ptr[esi].id, ebx
 	;-----------------------------------
@@ -91,7 +98,12 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 		mov dword ptr[esi].speed, 4
 		;-------------------------------
 		.if ebx == MOON || ebx == BASE_MOON
-			
+			fn ClassEntity_LoadSprire, hInstance, IDI_MOON
+			;--------------------------
+			mov dword ptr[esi].sprite, eax
+			mov byte ptr[esi].animate, 0
+			;--------------------------
+			fn ClassEntity_SetRandomFrame, esi, maxFrame
 		.elseif ebx == ASTEROID
 		
 		.endif
@@ -102,6 +114,8 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 	.elseif ebx == ID_TITLE
 	
 	.endif
+	;-----------------------------------
+	mov dword ptr[esi].fRender, offset ClassEntity_onRender
 	;-----------------------------------
 	mov eax, wd
 	mov dword ptr[esi].w, eax
@@ -121,11 +135,97 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 	Ret
 ClassEntity_Create endp
 ;====================================================================
-ClassEntity_LoadSprire proc uses ebx esi edi hInst:DWORD, idRes:DWORD
-
-
-
-
-
+ClassEntity_onRender proc uses ebx esi edi lpEntity:DWORD
+	mov edi, lpEntity
+	;--------------------------------------
+	.if dword ptr[edi + 17] == ID_TITLE
+		push 00FF4040h
+	.else
+		push 0FEFEFEh
+	.endif
+	;--------------------------------------
+	push dword ptr[edi + 37]				;h
+	push dword ptr[edi + 33]				;w
+	push 0 ;y
+	;--------------------------------------
+	fn ClassEntity_GetCurrentFrame, lpEntity
+	;--------------------------------------
+	mov ebx, dword ptr[edi + 37]			;h
+	mul ebx
+	;--------------------------------------
+	push eax								;x
+	;--------------------------------------
+	push dword ptr[edi + 37]				;h
+	push dword ptr[edi + 33]				;w
+	;--------------------------------------
+	push dword ptr[edi + 29]				;y
+	push dword ptr[edi + 25]				;x
+	;--------------------------------------
+	push screen
+	push dword ptr[edi + 21]
+	;--------------------------------------
+	call ClassIMG_DrawTransparentBMP
+	;--------------------------------------
 	Ret
+ClassEntity_onRender endp
+;====================================================================
+ClassEntity_LoadSprire proc uses ebx esi edi hInst:DWORD, idRes:DWORD
+	fn LoadBitmap, hInst, idRes
+	;---------------------------------------
+	or eax, eax
+	jne @@Ret
+	;---------------------------------------
+	fn MessageBox, 0, "Load Sprite Failed", "Error!", MB_ICONERROR
+	fn ExitProcess, -1
+	;---------------------------------------
+	@@Ret:
+		Ret
 ClassEntity_LoadSprire endp
+;===============================================================
+ClassEntity_GetCurrentFrame proc uses ebx esi edi lpEntity:DWORD
+	mov eax, lpEntity
+	mov eax, dword ptr[eax + 4]
+	;---------------------------------------------
+	Ret
+ClassEntity_GetCurrentFrame endp
+;===============================================================
+ClassEntity_SetSprite proc uses ebx esi edi lpEntity:DWORD, curFrame:DWORD, maxFrame:DWORD, rate:DWORD
+	mov edi, lpEntity
+	;--------------------------------------
+	mov eax, curFrame
+	mov dword ptr[edi + 4], eax
+	;--------------------------------------
+	mov eax, maxFrame
+	mov dword ptr[edi], eax
+	;--------------------------------------
+	mov eax, rate
+	mov dword ptr[edi + 8], eax
+	;--------------------------------------
+	fn GetTickCount
+	;--------------------------------------
+	mov dword ptr[edi + 12], eax
+	;--------------------------------------
+	mov byte ptr[edi + 16], 1
+	;--------------------------------------
+	Ret
+ClassEntity_SetSprite endp
+;============================================================================
+ClassEntity_SetCurrentFrame proc uses ebx esi edi lpEntity:DWORD, frame:DWORD
+	mov edi, lpEntity
+	;----------------------------
+	mov ebx, frame
+	mov dword ptr[edi + 4], ebx
+	;----------------------------
+	Ret
+ClassEntity_SetCurrentFrame endp
+;============================================================================
+ClassEntity_SetRandomFrame proc uses ebx esi edi lpEntity:DWORD, rmax:DWORD
+	mov edi, lpEntity
+	;---------------------------
+	fn RangedRand, 1, rmax
+	;---------------------------
+	dec eax
+	mov dword ptr[edi + 4], eax
+	;---------------------------
+	Ret
+ClassEntity_SetRandomFrame endp

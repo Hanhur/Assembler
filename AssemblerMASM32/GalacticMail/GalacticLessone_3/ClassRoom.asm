@@ -62,6 +62,7 @@ ClassRoom_CreateRoom proc uses ebx esi edi idRoom:DWORD
 			
 		case STATE_ROOM_FIRST
 			fn ClassEntity_Create, MOON, 8, 10, 64, 64, 496, 64
+			fn ClassEntity_Create, MOON, 8, 10, 64, 64, 80, 72
 		case STATE_ROOM_SECOND
 			
 		case STATE_ROOM_THIRD
@@ -139,6 +140,28 @@ ClassRoom_onLoop endp
 ClassRoom_onRender proc uses ebx esi edi
 	fn ClassIMG_DrawBMP, background, screen, camera.left, camera.top, camera.right, camera.bottom
 	;-----------------------------------
+	mov esi, pEntity
+	xor ebx, ebx
+	assume esi:PTR ENTITY
+	jmp @@For
+	;----------------------------------
+	@@In:
+		mov eax, dword ptr[esi].id
+		.if eax != ID_NONE
+			mov eax, dword ptr[esi].fRender
+			push esi
+			call eax
+		.endif
+	;----------------------------------
+	inc ebx
+	add esi, sizeof ENTITY
+	;----------------------------------
+	@@For:
+		cmp ebx, entity_num
+		jl @@In
+		;------------------------------
+	assume esi:nothing
+	;----------------------------------
 	Ret
 ClassRoom_onRender endp
 ;=====================================================================
