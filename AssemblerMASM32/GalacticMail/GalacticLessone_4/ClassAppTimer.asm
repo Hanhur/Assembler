@@ -10,7 +10,7 @@ ClassTimer_get_ticks	proto
 
 
 .data
-	frame_rate	dd 34
+	frame_rate	dd 40 ;25 Frames per Second
 	startTicks	dd 0
 
 

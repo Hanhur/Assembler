@@ -10,6 +10,8 @@ ClassEntity_SetRandomFrame	proto :DWORD, :DWORD
 ClassEntity_onAnimate		proto :DWORD
 ClassEntity_onAnimationEnd	proto :DWORD
 ClassEntity_onMove			proto :DWORD
+ClassEntity_outsideRoom		proto :DWORD, :DWORD, :DWORD
+ClassEntity_wrap			proto :DWORD, :DWORD, :DWORD
 ;---------------------------- Functions Class Moon ----------------------------------
 ClassMoon_onLoop			proto :DWORD
 
@@ -122,7 +124,7 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 	mov eax, id
 	mov dword ptr[esi].id, ebx
 	;-----------------------------------
-	.if ebx == MOON || ebx == BASE_MOON || ebx == ASTEROID
+	.if ebx == MOON || ebx == BASE_MOON || ASTEROID
 		mov dword ptr[esi].speed, 4
 		;-------------------------------
 		.if ebx == MOON || ebx == BASE_MOON
@@ -141,6 +143,7 @@ ClassEntity_Create proc uses ebx esi edi id:DWORD, maxFrame:DWORD, rate:DWORD, w
 		mov dword ptr[esi].direction, eax
 		;--------------------------------
 		mov dword ptr[esi].fLoop, offset ClassMoon_onLoop
+		;--------------------------------
 	.elseif ebx == PLAYER
 	
 	.elseif ebx == EXPLOSION
@@ -214,13 +217,15 @@ ClassMoon_onLoop proc uses ebx esi edi lpEntity:DWORD
 	;---------------------------------
 	fn ClassEntity_onMove, lpEntity
 	;---------------------------------
-
-
-
-
-
-
-	Ret
+	fn ClassEntity_outsideRoom, lpEntity, ROOM_WIDTH, ROOM_HEIGHT
+	;---------------------------------
+	or eax, eax
+	je @@Ret
+	;---------------------------------
+	fn ClassEntity_wrap, lpEntity, ROOM_WIDTH, ROOM_HEIGHT
+	;---------------------------------
+	@@Ret:
+		Ret
 ClassMoon_onLoop endp
 ;====================================================================
 ClassEntity_LoadSprire proc uses ebx esi edi hInst:DWORD, idRes:DWORD
@@ -383,3 +388,104 @@ ClassEntity_onMove proc uses ebx esi edi lpEntity:DWORD
 	assume edi:nothing
 	Ret
 ClassEntity_onMove endp
+;================================================================================
+ClassEntity_outsideRoom proc uses ebx esi edi lpEntity:DWORD, rw:DWORD, rh:DWORD
+	LOCAL result:DWORD
+	;----------------------------
+	mov dword ptr[result], 0
+	;----------------------------
+	mov edi, lpEntity
+	assume edi:PTR ENTITY
+	;----------------------------
+	; if(y + h < 0 || y > height)
+	;----------------------------
+	mov eax, dword ptr[edi].y
+	add eax, dword ptr[edi].h
+	;----------------------------
+	cmp eax, 0
+	jge @F
+	;----------------------------
+	@@True:
+		mov dword ptr[result], 1
+		jmp @@Ret
+	;----------------------------
+	@@:
+		mov eax, dword ptr[edi].y
+		cmp eax, dword ptr[rh]
+		jle @F
+		;-------------------------
+		jmp @@True
+	;-----------------------------
+	@@:
+		;-------------------------
+		; if(x + w < 0 || x > width)
+		;-------------------------
+		mov eax, dword ptr[edi].x
+		add eax, dword ptr[edi].w
+		cmp eax, 0
+		jge @F
+		;-------------------------
+		jmp @@True
+	;-----------------------------
+	@@:	
+		mov eax, dword ptr[edi].x
+		cmp eax, dword ptr[rw]
+		jle @@Ret
+		;------------------------
+		jmp @@True
+	;----------------------------
+	@@Ret:
+		assume edi:nothing
+		mov eax, dword ptr[result]
+		Ret
+ClassEntity_outsideRoom endp
+;========================================================================
+ClassEntity_wrap proc uses ebx esi edi lpEntity:DWORD, rw:DWORD, rh:DWORD
+	mov edi, lpEntity
+	assume edi:PTR ENTITY
+	;---------------------------------
+	; if(x + w < 0) x = room_width
+	; if(x > room_width) x = -w
+	;---------------------------------
+	mov eax, dword ptr[edi].x
+	add eax, dword ptr[edi].w
+	cmp eax, 0
+	jge @F
+	;---------------------------------
+	mov eax, dword ptr[rw]
+	mov dword ptr[edi].x, eax
+	;---------------------------------
+	@@:
+		mov eax, dword ptr[edi].x
+		cmp eax, dword ptr[rw]
+		jle @F
+		;-----------------------------
+		mov eax, dword ptr[edi].w
+		neg eax
+		mov dword ptr[edi].x, eax
+	;---------------------------------
+	; if( y + h < 0) y = room_height
+	; if(y > room_height) y = -h
+	;---------------------------------
+	@@:
+		mov eax, dword ptr[edi].y
+		add eax, dword ptr[edi].h
+		cmp eax, 0
+		jge @F
+		;----------------------------
+		mov eax, dword ptr[rh]
+		mov dword ptr[edi].y, eax
+	;---------------------------------
+	@@:
+		mov eax, dword ptr[edi].y
+		cmp eax, dword ptr[rh]
+		jle @F
+		;-----------------------------
+		mov eax, dword ptr[edi].h
+		neg eax
+		mov dword ptr[edi].y, eax
+	;---------------------------------
+	@@:
+		assume edi:nothing
+		Ret
+ClassEntity_wrap endp
