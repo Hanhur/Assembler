@@ -16,5 +16,10 @@ ClassApp_onGame proc uses ebx esi edi
 		fn ClassTimer_delay
 		;-----------------------------
 	.endw
+	;---------------------------------
+	;fn timeKillEvent, id_timer
+	;---------------------------------
+	;fn timeEndPeriod, minResolution
+	;---------------------------------
 	Ret
 ClassApp_onGame endp

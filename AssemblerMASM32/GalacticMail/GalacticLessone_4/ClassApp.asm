@@ -1,7 +1,8 @@
 include ClassAppTimer.asm
 include ClassIMG.asm
 ;------------------------------------
-ClassApp_onExecute	proto
+ClassApp_onExecute		proto
+;ClassApp_GameController	proto :DWORD, :DWORD, :DWORD, :DWORD, :DWORD
 ;------------------------------------
 .const
 	ROOM_WIDTH				equ 640
@@ -30,6 +31,9 @@ ClassApp_onExecute	proto
 	screen		dd 0
 	screenBmp	dd 0
 	bmpOld		dd 0
+	;-------------------------------
+	id_timer		dd 0
+	minResolution	dd 0
 	;-------------------------------
 	include ClassEntity.asm
 	include ClassRoom.asm
@@ -73,3 +77,15 @@ ClassApp_onExecute proc uses ebx esi edi
 		mov eax, dword ptr[dwReturnValue]
 		Ret
 ClassApp_onExecute endp
+;=============================================================================================================
+ClassApp_GameController proc uses ebx esi edi idTimer:DWORD, nMsg:DWORD, dwUser:DWORD, res1:DWORD, res2:DWORD
+	fn ClassApp_onLoop
+	;-----------------------------
+	fn ClassApp_onRender
+	;-----------------------------
+	fn ClassApp_onEvent
+	;-----------------------------
+	fn ClassApp_updateState
+	;-----------------------------
+	Ret
+ClassApp_GameController endp
