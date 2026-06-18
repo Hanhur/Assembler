@@ -1,0 +1,4 @@
+nmake           # Собрать main.exe
+nmake run       # Собрать и запустить
+nmake clean     # Удалить .obj и .exe
+nmake rebuild   # Полная пересборка
