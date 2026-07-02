@@ -1,83 +1,40 @@
-; Opisanie modeli pamayti
-.686
-.model flat, stdcall
-option casemap:none
-;====================================
-include \masm32\include\kernel32.inc
-includelib \masm32\lib\kernel32.lib
-;====================================
-;Constant
-.const
-	FPS equ 1000
+mov ax, [number]	; заносим значение переменной number в регистр АХ
+mov [number], bx	; загрузить значение регистра ВХ в переменную number
+mov bx, cx			; занести в регистр ВХ значение регистра СХ
+mov al, 1			; занести в регистр AL значение 1
+mov dh, cl			; занести в регистр DH значение регистра CL
+mov esi, edi		; копировать значение регистра EDI в регистр ESI
+mov word [number]	; сохранить 16-битное значение 1 в переменную "number"
 	
-; Sekcie data
-.data
-	buffer dq 0
-		   dq 0
-	;numberA db 10 ; +0
-	;numberB dd 11 ; +1
-	;numberC dd 12 ; +3
-	;numbreD dq 13 ; +12
-	;littleEndians dd 12345678h
-	
-.data?
-	;hInstance dd ?
-	
-; Sekcie koda
-.code
-start:
-	mov eax, 614D5341h
-	mov ecx, 72657473h
-	mov edx, 00002179h
-	;-----------------
-	; Preficks ptr -> Pointer (Ukazatel)
-	mov dword ptr[buffer], eax
-	mov dword ptr[buffer + 4], ecx
-	mov dword ptr[buffer + 8], edx
-	;-----------------
-	; offset -> vychist oblast pamyati, i pomesti v register eax znachenie buffera 
-	mov eax, offset buffer
-	;-----------------
-	mov eax, dword ptr[buffer] ;4 bit
-	mov dx, word ptr[buffer + 4] ;2 bit
-	mov cl, byte ptr[buffer + 6] ;1 bit
-	;-----------------
-	movzx eax, byte ptr[buffer]
-	movzx edx, word ptr[buffer]
-	;-----------------
-	;mov eax, littleEndians
-	;----------------
-	;mov hInstance, -1
-	;---------------
-	;mov al, 78h
-	;mov ah, 56h
-	;mov ax, 5678h
-	;mov eax, 12345678h
-	;---------------
-	;mov cl, 78h
-	;mov ch, 56h
-	;mov cx, 5678h
-	;mov ecx, 12345678h
-	;---------------
-	;mov dl, 78h
-	;mov dh, 56h
-	;mov dx, 5678h
-	;mov edx, 12345678h
-	;---------------
-	;mov bl, 78h
-	;mov bh, 56h
-	;mov bx, 5678h
-	;mov ebx, 12345678h
-	;---------------
-	push FPS
-	;---------------
-	; function Sleep, zaderzhka 3000 milisekund
-	call Sleep
-	;---------------
-	; push, peredacha parametra i pomichenie v steck
-	push 0 
-	;---------------
-	; call vyzov function
-	call ExitProcess
-	;---------------
-end start
+mov ax, [number_one] ; загружаем в АХ 16-битное, значение "number_one"
+mov [number_two], ax ;  затем копируем его в переменную "number_two"
+
+; Для копирования значения BL в регистр АХ мы должны «расширить диапазон», то есть скопировать весь ВХ в АХ, а затем загрузить 0 в АХ:
+mov ax, bx ; загружаем ВХ в АХ "сбрасываем" верхнюю часть
+mov ah, 0 ; АХ — записываем в нее O
+
+; Регистр АН является верхней 8-битной частью регистра АХ. После выполнения
+; команды MOV ах, Ьх регистр АН будет содержать значение верхней части регистра ВХ, то есть значение регистра ВН. Но мы не можем быть уверены, что
+; ВН содержит 0, поэтому мы должны загрузить 0 в АН — команда MOV ah, O
+; «сбрасывает» значение регистра АН. В результате мы расширили 8-битное
+; значение, ранее содержащееся в регистре BL, до 16 битов. Новое, 16-битное,
+; значение будет находиться в регистре АХ.
+
+; Можно поступить и наоборот: сначала сбросить весь АХ, а затем загрузить BL в младшую часть АХ (AL):
+
+mov ax, 0 ; АН = 0, AL = О
+mov al, bl ; заносим в AL значение BL
+
+; MOV — как в официальной документации:
+; MOV r/m8, reg8
+; MOV r/ml6, regl6
+; MOV r/m32, reg32
+; MOV reg8, r/m8
+; MOV regl6, r/ml6
+; MOV reg32, r/m32
+; MOV reg8,imm8
+; MOV regl6, imml6
+; MOV reg32,imm32
+; MOV r/m8,imm8
+; MOV r/ml6,imml6
+; MOV r/m32,imm32
