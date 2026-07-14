@@ -25,16 +25,16 @@ mov ah, 0 ; АХ — записываем в нее O
 mov ax, 0 ; АН = 0, AL = О
 mov al, bl ; заносим в AL значение BL
 
-; MOV — как в официальной документации:
-; MOV r/m8, reg8
-; MOV r/ml6, regl6
-; MOV r/m32, reg32
-; MOV reg8, r/m8
-; MOV regl6, r/ml6
-; MOV reg32, r/m32
-; MOV reg8,imm8
-; MOV regl6, imml6
-; MOV reg32,imm32
-; MOV r/m8,imm8
-; MOV r/ml6,imml6
-; MOV r/m32,imm32
+MOV — как в официальной документации:
+MOV r/m8, reg8
+MOV r/ml6, regl6
+MOV r/m32, reg32
+MOV reg8, r/m8
+MOV regl6, r/ml6
+MOV reg32, r/m32
+MOV reg8, imm8
+MOV regl6, imml6
+MOV reg32, imm32
+MOV r/m8, imm8
+MOV r/ml6, imml6
+MOV r/m32, imm32
